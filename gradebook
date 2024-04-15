@@ -1,1 +1,7 @@
 
+CREATE TABLE Courses (
+     couurse_id INT,
+     
+
+
+)
