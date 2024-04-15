@@ -1,7 +1,49 @@
 
 CREATE TABLE Courses (
      couurse_id INT,
-     
+     proffesor_id INT,
+     department VARCHAR(100),
+     course_number INT,
+     course_name VARCHAR(100),
+     semester VARCHAR(25),
+     year INT,
+    
+)
 
 
+CREATE TABLE Proffesor (
+     proffesor_id INT,
+     first_name VARCHAR(50)
+     last_name VARCHAR(50)
+     contact_info,
+     office_location,
+)
+
+CREATE TABLE Category (
+
+     category_id INT,
+     category_name VARCHAR(100)
+     wieght_percent INT,
+)
+CREATE TABLE Assignment (
+     assignment_id INT,
+     category_id INT,
+     assignment_name VARCHAR(100),
+     max_score INT,
+
+)
+
+CREATE TABLE Student (
+      student_id INT,
+      first_name VARCHAR(50),
+      last_name VARCHAR(50),
+)
+
+CREATE TABLE Grade(
+      grade_id INT,
+      student_id INT,
+      Assignment_id INT,
+      course_id INT,
+      student_score INT,
+      date DATE,
 )
