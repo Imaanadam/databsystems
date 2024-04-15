@@ -2,52 +2,56 @@ DROP DATABASE IF EXISTS Gradebook;
 CREATE DATABASE Gradebook;
 USE Gradebook;
 
-
-CREATE TABLE Courses (
-	course_id INT,
-    professor_id INT,
-    department VARCHAR(100),
-    course_number INT,
-    course_name VARCHAR(100),
-    semester VARCHAR(25),
-    year INT
-    );
-
-
 CREATE TABLE Professor (
-     professor_id INT,
+     professor_id INT PRIMARY KEY,
      first_name VARCHAR(50),
      last_name VARCHAR(50),
      contact_info VARCHAR(50),
      office_location VARCHAR(50)
 );
 
+CREATE TABLE Courses (
+	course_id INT PRIMARY KEY,
+    professor_id INT,
+    department VARCHAR(100),
+    course_number INT,
+    course_name VARCHAR(100),
+    semester VARCHAR(25),
+    year INT,
+    FOREIGN KEY (professor_id) REFERENCES Professor (professor_id)
+    );
+
+
 CREATE TABLE Category (
-     category_id INT,
+     category_id INT PRIMARY KEY,
      category_name VARCHAR(100),
      wieght_percent INT
 ); 
 
 CREATE TABLE Assignment (
-     assignment_id INT,
+     assignment_id INT PRIMARY KEY,
      category_id INT,
      assignment_name VARCHAR(100),
-     max_score INT
+     max_score INT,
+     FOREIGN KEY (category_id) REFERENCES Category (category_id)
 );
 
 CREATE TABLE Student (
-      student_id INT,
+      student_id INT PRIMARY KEY,
       first_name VARCHAR(50),
       last_name VARCHAR(50)
 );
 
-CREATE TABLE Grade(
-grade_id INT,
+CREATE TABLE Grade (
+grade_id INT PRIMARY KEY,
 student_id INT,
 assignment_id INT,
 course_id INT,
 student_score INT,
-date DATE
+date DATE,
+FOREIGN KEY (student_id) REFERENCES Student (student_id),
+FOREIGN KEY (assignment_id) REFERENCES Assignment (assignment_id),
+FOREIGN KEY (course_id) REFERENCES Courses (course_id)
 );
 
 INSERT INTO Grade
