@@ -67,5 +67,5 @@ VALUES
 #WHERE student_score > 90; 
 
 #SHOW CREATE VIEW Grade_view;
-#SELECT *
-#FROM Grade
+SELECT *
+FROM Grade
