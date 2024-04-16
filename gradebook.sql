@@ -25,7 +25,7 @@ CREATE TABLE Courses (
 CREATE TABLE Category (
      category_id INT PRIMARY KEY,
      category_name VARCHAR(100),
-     weight_percent INT
+     weight_percent DECIMAL(10,2)
 ); 
 CREATE TABLE Student (
       student_id INT PRIMARY KEY,
@@ -35,11 +35,9 @@ CREATE TABLE Student (
 CREATE TABLE Assignment (
      assignment_id INT PRIMARY KEY,
      category_id INT,
-     #student_id INT,
      course_id INT,
      assignment_name VARCHAR(100),
      max_score INT,
-	 #FOREIGN KEY (student_id) REFERENCES Student(student_id),
      FOREIGN KEY (category_id) REFERENCES Category (category_id),
      FOREIGN KEY (course_id) REFERENCES Courses (course_id)
 );
@@ -75,10 +73,10 @@ VALUES
 
 INSERT INTO Category
 VALUES
-(1, 'Participation', 10),
-(2, 'Homework', 20),
-(3, 'Tests', 50),
-(4, 'Project', 20);
+(1, 'Participation', 0.10),
+(2, 'Homework', 0.20),
+(3, 'Tests', 0.50),
+(4, 'Project', 0.20);
 
 INSERT INTO Courses(course_id,professor_id,department,course_section,course_name,semester,year)
 VALUES
@@ -89,26 +87,64 @@ VALUES
 
 INSERT INTO Assignment(assignment_id, category_id, course_id, assignment_name, max_score)
 VALUES
-(101, 2, 808, 'Homework 1', 100),
-(102, 3, 607, 'Test 3', 100),
-(103, 4, 505, 'Bison Project', 100),
-(104, 3, 304, 'Theory Exam', 100),
-(105, 1, 808,'Exit ticket', 20),
-(106, 2, 808, 'Homework 1', 100),
-(107, 2, 304, 'Homework 1',100);
+
+-- assignments in course_id = 808:
+    (105, 1, 808, 'Exit ticket 1', 20),
+    (112, 1, 808, 'Exit ticket 2', 20),
+    (113, 1, 808, 'Exit ticket 3', 20),
+    (101, 2, 808, 'Homework 1', 100),
+	(106, 2, 808, 'Homework 1', 100),
+	(110, 2, 808, 'Homework 2', 100),
+	(111, 2, 808, 'Homework 3', 100),
+    (108, 3, 808, 'Linear Test 1', 100),
+    (109, 3, 808, 'Linear Test 2', 100),
+    (114, 4, 808, 'Project 1', 100),
+    
+-- assignments in course_id = 304:
+	(104, 3, 304, 'Theory Exam', 100),
+	(107, 2, 304, 'Homework 1',100),
+    
+-- assignments in course_id = 607:
+	(102, 3, 607, 'Test 3', 100),
+    
+-- assignments in course_id = 505:
+	(103, 4, 505, 'Bison Project', 100);
 
 
 INSERT INTO Grade (grade_id,student_id, assignment_id, course_id, student_score, date)
 VALUES 
-(101,259871, 101, 808, 65, '2024-04-15'),
-(171,259872, 102, 607, 75, '2024-04-15'),
-(151,259873, 103, 505, 85, '2024-04-15'),
-(110,259874, 104, 304, 65, '2024-04-15'),
-(144,259874, 106, 808, 40, '2024-04-15'),
-(124,259874, 105, 808, 19, '2024-04-15'),
-(102,259871, 107, 304, 86, '2024-04-15');
 
-#show the tables with the inserted contents;
+-- Assignments of student 1 (steve jobs):
+	-- Linear Algebra
+		(201, 259871, 101, 808, 65, '2024-04-15'),
+	-- Pre-calculus
+		(207, 259871, 107, 304, 86, '2024-04-15'),
+        
+-- Assignments of student 2 (ivy qee):
+	-- Russian Literature
+		(202, 259872, 102, 607, 75, '2024-04-15'),
+	-- Linear Algebra
+		(208, 259872, 110, 808, 100, '2024-04-15'),
+		(209, 259872, 111, 808, 70, '2024-04-15'),
+		(210, 259872, 108, 808, 89, '2024-04-15'),
+		(211, 259872, 109, 808, 79, '2024-04-15'),
+		(212, 259872, 114, 808, 100, '2024-04-15'),
+        (215, 259872, 112, 808, 18, '2024-04-15'),
+		(216, 259872, 113, 808, 20, '2024-04-15'),
+        
+-- Assignments of student 3 (sam smith):
+	-- Astronomy
+		(203, 259873, 103, 505, 85, '2024-04-15'),
+        
+-- Assignments of student 4 (victoria smith):
+	-- Pre-calculus
+		(204, 259874, 104, 304, 65, '2024-04-15'),
+	-- Linear Algebra
+		(205, 259874, 106, 808, 40, '2024-04-15'),
+		(206, 259874, 105, 808, 19, '2024-04-15');
+
+
+-- show the tables with the inserted contents;
 SELECT *
 FROM Professor;
 
@@ -127,12 +163,12 @@ FROM Student;
 SELECT *
 FROM Grade;
 
-#compute the average/highest/lowest score of an assignment
+-- compute the average/highest/lowest score of an assignment
 
 
-SELECT student_score as MAX_score
+SELECT MAX(student_score) as max_score
 FROM Grade as GR JOIN Assignment as A ON GR.assignment_id = A.assignment_id
-WHERE student_score = (SELECT MAX(student_score) FROM Grade WHERE assignment_name = 'Homework 1');
+WHERE assignment_name = 'Homework 1';
 
 SELECT AVG(G.student_score) AS average_score
 FROM Grade G
@@ -141,12 +177,9 @@ WHERE A.assignment_name = 'Homework 1' -- Change 'Homework 1' to the desired ass
 AND A.course_id = 808; -- Change 808 to the desired course_id
 
 
-SELECT student_score as MIN_score
+SELECT MIN(student_score) as min_score
 FROM Grade as GR JOIN Assignment as A ON GR.assignment_id = A.assignment_id
-WHERE student_score = (SELECT MIN(student_score) FROM Grade WHERE assignment_name = 'Homework 1');
-#SELECT MIN(student_score) as low_score
-#FROM Grade
-#WHERE assignment_name = 'Homework 1';
+WHERE assignment_name = 'Homework 1';
 
 #List all the students of a given course
 SELECT C.course_name, GR.course_id, GR.student_id, ST.first_name, ST.last_name
@@ -154,12 +187,12 @@ FROM Grade as GR JOIN Student as ST ON GR.student_id = ST.student_id
 	JOIN Courses as C ON C.course_id = GR.course_id
 WHERE GR.course_id = 808; 
 
-#List all students in given coure and their scores for each assignment
+-- List all students in given coure and their scores for each assignment
 
-#Add and assignment to a course
+-- Add and assignment to a course
 INSERT INTO Assignment(assignment_id, category_id, course_id, assignment_name, max_score)
 VALUES
-(108, 4, 607, 'Russian Essay', 100);
+(115, 4, 607, 'Russian Essay', 100);
 SELECT *
 FROM Assignment;
 
@@ -181,44 +214,28 @@ JOIN
 WHERE 
     C.course_id = 808;
     
-#Change the percentages of the categories for a course
+-- Change the percentages of the categories for a course
 UPDATE Category
-SET weight_percent = 15
+SET weight_percent = 0.15
 WHERE category_id= 1 ;
 
 UPDATE Category
-SET weight_percent = 25
+SET weight_percent = 0.25
 WHERE category_id = 2;
 
 UPDATE Category
-SET weight_percent = 40
+SET weight_percent = 0.40
 WHERE category_id= 3;
 
 UPDATE Category
-SET weight_percent = 20
+SET weight_percent = 0.20
 WHERE category_id = 4;
 
 SELECT * 
 FROM Category;
 
-/*UPDATE Grade
-SET student_score = student_score + 2
-WHERE student_id = 259871 AND assignment_id = 101;
 
-UPDATE Grade
-SET student_score = student_score + 2
-WHERE student_id = 259872 AND assignment_id = 102;
-
-UPDATE Grade
-SET student_score = student_score + 2
-WHERE student_id = 259873 AND assignment_id = 103;
-
-UPDATE Grade
-SET student_score = student_score + 2
-WHERE student_id = 259874 AND assignment_id = 104;
-*/
-#Add 2 points to the score of each student on an assignment
-
+-- Add 2 points to the score of each student on an assignment
 UPDATE Grade
 SET student_score = student_score + 2
 WHERE grade_id = 101;
@@ -246,12 +263,119 @@ WHERE ST.last_name LIKE '%Q%';
 SELECT first_name, last_name, student_score
 FROM Grade as GR JOIN Student as ST ON GR.student; */
 
-UPDATE Grade AS GR
+/*UPDATE Grade AS GR
 JOIN (
     SELECT student_id
     FROM Student
     WHERE last_name LIKE 'Q%'
 ) AS ST ON GR.student_id = ST.student_id
-SET GR.student_score = GR.student_score + 2;
+SET GR.student_score = GR.student_score + 2;*/
 
-#compute student grade
+-- compute student grade
+
+DELIMITER //
+CREATE FUNCTION calc_category_score(student_id INT, course_id INT, category_id INT)
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+	DECLARE total_pts_earned DECIMAL(10,2);
+    DECLARE total_pts_avail DECIMAL(10,2);
+    DECLARE category_score DECIMAL(10,2);
+
+	-- Compute total points earned for category
+	SELECT 
+		SUM(GR.student_score) 
+	INTO 
+		total_pts_earned
+	FROM
+		Grade AS GR
+	JOIN 
+		Assignment AS A ON GR.assignment_id = A.assignment_id
+		JOIN Student AS ST ON GR.student_id = ST.student_id
+	WHERE
+		GR.student_id = student_id AND GR.course_id = course_id AND A.category_id = category_id;
+	
+    -- compute total points available for category
+    SELECT
+		SUM(A.max_score) 
+	INTO 
+		total_pts_avail
+	FROM 
+		Assignment AS A
+	JOIN 
+		Grade AS GR ON GR.assignment_id = A.assignment_id
+		JOIN Student AS ST ON GR.student_id = ST.student_id
+	WHERE
+		GR.student_id = student_id
+		AND A.course_id = course_id
+        AND A.category_id = category_id;
+        
+	-- compute category score
+	IF total_pts_avail IS NOT NULL AND total_pts_avail > 0 THEN
+		SET category_score = total_pts_earned / total_pts_avail;
+	ELSE
+		SET category_score = 0;
+	END IF;
+    
+	-- apply category weight to category score
+    IF category_id = 1 THEN -- category = participation
+		SET category_score = category_score * (
+			SELECT 
+				weight_percent 
+			FROM 
+				Category AS C
+            WHERE 
+				C.category_id = 1);
+                
+	ELSEIF category_id = 2 THEN -- category = homework
+		SET category_score = category_score * (
+			SELECT 
+				weight_percent 
+			FROM 
+				Category AS C
+            WHERE 
+				C.category_id = 2);
+                
+	ELSEIF category_id = 3 THEN -- category = tests
+		SET category_score = category_score * (
+			SELECT 
+				weight_percent 
+			FROM 
+				Category AS C
+            WHERE 
+				C.category_id = 3);
+                
+	ELSEIF category_id = 4 THEN -- category = project
+		SET category_score = category_score * (
+			SELECT 
+				weight_percent 
+			FROM 
+				Category AS C
+            WHERE 
+				C.category_id = 4);
+	END IF;
+    
+	RETURN category_score; 
+END //
+DELIMITER ;
+
+SELECT 
+	ST.student_id,
+	ST.first_name,
+	ST.last_name,
+    C.course_id,
+	calc_category_score(ST.student_id, C.course_id, 1) AS part_score, 
+	calc_category_score(ST.student_id, C.course_id, 2) AS homework_score,
+	calc_category_score(ST.student_id, C.course_id, 3) AS test_score,
+	calc_category_score(ST.student_id, C.course_id, 4) AS project_score,
+	((calc_category_score(ST.student_id, C.course_id, 1) + 
+	calc_category_score(ST.student_id, C.course_id, 2) + 
+	calc_category_score(ST.student_id, C.course_id, 3) + 
+	calc_category_score(ST.student_id, C.course_id, 4)) * 100) AS final_grade
+FROM 
+	Student AS ST,
+    Courses AS C
+ORDER BY ST.student_id
+
+        
