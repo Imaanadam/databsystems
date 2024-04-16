@@ -27,23 +27,23 @@ CREATE TABLE Category (
      category_name VARCHAR(100),
      wieght_percent INT
 ); 
-
-CREATE TABLE Assignment (
-     assignment_id INT PRIMARY KEY,
-     category_id INT,
-     course_id INT,
-     assignment_name VARCHAR(100),
-     score INT,
-     max_score INT,
-     FOREIGN KEY (category_id) REFERENCES Category (category_id),
-     FOREIGN KEY (course_id) REFERENCES Courses (course_id)
-);
-
 CREATE TABLE Student (
       student_id INT PRIMARY KEY,
       first_name VARCHAR(50),
       last_name VARCHAR(50)
 );
+CREATE TABLE Assignment (
+     assignment_id INT PRIMARY KEY,
+     category_id INT,
+     #student_id INT,
+     course_id INT,
+     assignment_name VARCHAR(100),
+     max_score INT,
+	 #FOREIGN KEY (student_id) REFERENCES Student(student_id),
+     FOREIGN KEY (category_id) REFERENCES Category (category_id),
+     FOREIGN KEY (course_id) REFERENCES Courses (course_id)
+);
+
 
 CREATE TABLE Grade (
 grade_id INT PRIMARY KEY,
@@ -87,24 +87,26 @@ VALUES
 (505, 18573, 'science', 1, 'astronomy', 'spring', 2024),
 (304, 18574, 'math', 1, 'pre calculus', 'spring', 2024);
 
-INSERT INTO Assignment(assignment_id, category_id, course_id, assignment_name, score, max_score)
+INSERT INTO Assignment(assignment_id, category_id, course_id, assignment_name, max_score)
 VALUES
-(101, 2, 808, 'Homework 1', 77, 100),
-(102, 3, 607, 'Test 3', 96, 100),
-(103, 4, 505, 'Bison Project', 89, 100),
-(104, 3, 304, 'Theory Exam', 65, 100),
-(105, 1, 607,'Exit ticket', 10, 20),
-(106, 2, 808, 'Homework 1', 100, 100),
-(107, 2, 304, 'Homework 1', 35, 100);
+(101, 2, 808, 'Homework 1', 100),
+(102, 3, 607, 'Test 3', 100),
+(103, 4, 505, 'Bison Project', 100),
+(104, 3, 304, 'Theory Exam', 100),
+(105, 1, 808,'Exit ticket', 20),
+(106, 2, 808, 'Homework 1', 100),
+(107, 2, 304, 'Homework 1',100);
 
 
 INSERT INTO Grade (grade_id,student_id, assignment_id, course_id, student_score, date)
 VALUES 
-(101,259871, 101, 304, 90, '2024-04-15'),
-(171,259872, 102, 505, 75, '2024-04-15'),
-(151,259873, 103, 607, 85, '2024-04-15'),
-(110,259874, 104, 808, 65, '2024-04-15'),
-(102,259871, 104, 304, 86, '2024-04-15');
+(101,259871, 101, 808, 65, '2024-04-15'),
+(171,259872, 102, 607, 75, '2024-04-15'),
+(151,259873, 103, 505, 85, '2024-04-15'),
+(110,259874, 104, 304, 65, '2024-04-15'),
+(144,259874, 106, 808, 40, '2024-04-15'),
+(124,259874, 105, 808, 19, '2024-04-15'),
+(102,259871, 107, 304, 86, '2024-04-15');
 
 #show the tables with the inserted contents;
 SELECT *
@@ -126,17 +128,25 @@ SELECT *
 FROM Grade;
 
 #compute the average/highest/lowest score of an assignment
-SELECT AVG(score) as avg_score
-FROM Assignment
-WHERE assignment_name = 'Homework 1';
 
-SELECT MAX(score) as high_score
-FROM Assignment
-WHERE assignment_name = 'Homework 1';
 
-SELECT MIN(score) as low_score
-FROM Assignment
-WHERE assignment_name = 'Homework 1';
+SELECT student_score as MAX_score
+FROM Grade as GR JOIN Assignment as A ON GR.assignment_id = A.assignment_id
+WHERE student_score = (SELECT MAX(student_score) FROM Grade WHERE assignment_name = 'Homework 1');
+
+SELECT AVG(G.student_score) AS average_score
+FROM Grade G
+JOIN Assignment A ON G.assignment_id = A.assignment_id
+WHERE A.assignment_name = 'Homework 1' -- Change 'Homework 1' to the desired assignment name
+AND A.course_id = 808; -- Change 808 to the desired course_id
+
+
+SELECT student_score as MIN_score
+FROM Grade as GR JOIN Assignment as A ON GR.assignment_id = A.assignment_id
+WHERE student_score = (SELECT MIN(student_score) FROM Grade WHERE assignment_name = 'Homework 1');
+#SELECT MIN(student_score) as low_score
+#FROM Grade
+#WHERE assignment_name = 'Homework 1';
 
 #List all the students of a given course
 SELECT C.course_name, GR.course_id, GR.student_id, ST.first_name, ST.last_name
@@ -147,8 +157,26 @@ WHERE GR.course_id = 808;
 #List all students in given coure and their scores for each assignment
 
 #Add and assignment to a course
-INSERT INTO Assignment(assignment_id, category_id, course_id, assignment_name, score, max_score)
+INSERT INTO Assignment(assignment_id, category_id, course_id, assignment_name, max_score)
 VALUES
-(108, 4, 607, 'Russian Essay', 95, 100);
+(108, 4, 607, 'Russian Essay', 100);
 SELECT *
-FROM Assignment
+FROM Assignment;
+
+SELECT 
+    C.course_name,
+    S.student_id,
+    S.first_name,
+    S.last_name,
+    A.assignment_name,
+    G.student_score
+FROM 
+    Grade G
+JOIN 
+    Student S ON G.student_id = S.student_id
+JOIN 
+    Courses C ON G.course_id = C.course_id
+JOIN 
+    Assignment A ON G.assignment_id = A.assignment_id
+WHERE 
+    C.course_id = 808;
