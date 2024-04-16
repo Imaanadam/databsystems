@@ -91,23 +91,53 @@ VALUES
 (102, 3, 'Test 3', 96, 100),
 (103, 4, 'Bison Project', 89, 100),
 (104, 3, 'Theory Exam', 65, 100),
-(105, 1, 'Exit ticket', 10, 20);
+(105, 1, 'Exit ticket', 10, 20),
+(106, 2, 'Homework 1', 100, 100),
+(107, 2, 'Homework 1', 35, 100);
+
 
 INSERT INTO Grade (grade_id,student_id, assignment_id, course_id, student_score, date)
 VALUES 
 (101,259871, 101, 304, 90, '2024-04-15'),
 (171,259872, 102, 505, 75, '2024-04-15'),
 (151,259873, 103, 607, 85, '2024-04-15'),
-(110,259874, 104, 808, 65, '2024-04-15');
+(110,259874, 104, 808, 65, '2024-04-15'),
+(102,259871, 104, 304, 86, '2024-04-15');
 
-
-#CREATE VIEW Grade_view AS
-#SELECT grade_id, student_id, course_id, student_score
-#FROM Grade
-#WHERE student_score > 90; 
-
-#SHOW CREATE VIEW Grade_view;
+#show the tables with the inserted contents;
 SELECT *
-FROM Grade
+FROM Professor;
 
+SELECT *
+FROM Courses;
 
+SELECT *
+FROM Category;
+
+SELECT *
+FROM Assignment;
+
+SELECT *
+FROM Student;
+
+SELECT *
+FROM Grade;
+
+#compute the average/highest/lowest score of an assignment
+SELECT AVG(score) as avg_score
+FROM Assignment
+WHERE assignment_name = 'Homework 1';
+
+SELECT MAX(score) as high_score
+FROM Assignment
+WHERE assignment_name = 'Homework 1';
+
+SELECT MIN(score) as low_score
+FROM Assignment
+WHERE assignment_name = 'Homework 1';
+
+#List all the students of a given course
+SELECT C.course_name, GR.course_id, GR.student_id, ST.first_name, ST.last_name
+FROM Grade as GR JOIN Student as ST ON GR.student_id = ST.student_id
+	JOIN Courses as C ON C.course_id = GR.course_id
+WHERE GR.course_id = 808; 
