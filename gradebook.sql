@@ -31,10 +31,12 @@ CREATE TABLE Category (
 CREATE TABLE Assignment (
      assignment_id INT PRIMARY KEY,
      category_id INT,
+     course_id INT,
      assignment_name VARCHAR(100),
      score INT,
      max_score INT,
-     FOREIGN KEY (category_id) REFERENCES Category (category_id)
+     FOREIGN KEY (category_id) REFERENCES Category (category_id),
+     FOREIGN KEY (course_id) REFERENCES Courses (course_id)
 );
 
 CREATE TABLE Student (
@@ -85,15 +87,15 @@ VALUES
 (505, 18573, 'science', 1, 'astronomy', 'spring', 2024),
 (304, 18574, 'math', 1, 'pre calculus', 'spring', 2024);
 
-INSERT INTO Assignment(assignment_id, category_id, assignment_name, score, max_score)
+INSERT INTO Assignment(assignment_id, category_id, course_id, assignment_name, score, max_score)
 VALUES
-(101, 2, 'Homework 1', 77, 100),
-(102, 3, 'Test 3', 96, 100),
-(103, 4, 'Bison Project', 89, 100),
-(104, 3, 'Theory Exam', 65, 100),
-(105, 1, 'Exit ticket', 10, 20),
-(106, 2, 'Homework 1', 100, 100),
-(107, 2, 'Homework 1', 35, 100);
+(101, 2, 808, 'Homework 1', 77, 100),
+(102, 3, 607, 'Test 3', 96, 100),
+(103, 4, 505, 'Bison Project', 89, 100),
+(104, 3, 304, 'Theory Exam', 65, 100),
+(105, 1, 607,'Exit ticket', 10, 20),
+(106, 2, 808, 'Homework 1', 100, 100),
+(107, 2, 304, 'Homework 1', 35, 100);
 
 
 INSERT INTO Grade (grade_id,student_id, assignment_id, course_id, student_score, date)
@@ -141,3 +143,12 @@ SELECT C.course_name, GR.course_id, GR.student_id, ST.first_name, ST.last_name
 FROM Grade as GR JOIN Student as ST ON GR.student_id = ST.student_id
 	JOIN Courses as C ON C.course_id = GR.course_id
 WHERE GR.course_id = 808; 
+
+#List all students in given coure and their scores for each assignment
+
+#Add and assignment to a course
+INSERT INTO Assignment(assignment_id, category_id, course_id, assignment_name, score, max_score)
+VALUES
+(108, 4, 607, 'Russian Essay', 95, 100);
+SELECT *
+FROM Assignment
