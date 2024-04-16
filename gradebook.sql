@@ -182,13 +182,34 @@ FROM Grade as GR JOIN Assignment as A ON GR.assignment_id = A.assignment_id
 WHERE assignment_name = 'Homework 1';
 
 #List all the students of a given course
-SELECT C.course_name, GR.course_id, GR.student_id, ST.first_name, ST.last_name
+SELECT DISTINCT
+	C.course_name, 
+    GR.course_id, 
+    GR.student_id, 
+    ST.first_name, 
+    ST.last_name
 FROM Grade as GR JOIN Student as ST ON GR.student_id = ST.student_id
 	JOIN Courses as C ON C.course_id = GR.course_id
 WHERE GR.course_id = 808; 
 
--- List all students in given coure and their scores for each assignment
-
+-- List all students in given course and their scores for each assignment
+SELECT
+	ST.student_id,
+    ST.first_name,
+    ST.last_name,
+    A.assignment_name,
+    GR.student_score
+FROM
+	Grade AS GR
+JOIN
+	Student as ST ON GR.student_id = ST.student_id
+JOIN 
+	Assignment AS A ON GR.assignment_id = A.assignment_id
+JOIN 
+	Courses AS C ON GR.course_id = C.course_id
+WHERE
+	C.course_id = 808;
+    
 -- Add and assignment to a course
 INSERT INTO Assignment(assignment_id, category_id, course_id, assignment_name, max_score)
 VALUES
@@ -255,21 +276,10 @@ WHERE grade_id = 171;
 SELECT *
 FROM Grade;
 
-/*UPDATE Grade as GR
-JOIN Student as ST ON GR.student_id = ST.student_id
+UPDATE Grade as GR
+JOIN Student as ST ON GR.student_id = ST.student_id JOIN Courses AS C ON C.course_id = GR.course_id
 SET GR.student_score = GR.student_score + 2
-WHERE ST.last_name LIKE '%Q%';
-
-SELECT first_name, last_name, student_score
-FROM Grade as GR JOIN Student as ST ON GR.student; */
-
-/*UPDATE Grade AS GR
-JOIN (
-    SELECT student_id
-    FROM Student
-    WHERE last_name LIKE 'Q%'
-) AS ST ON GR.student_id = ST.student_id
-SET GR.student_score = GR.student_score + 2;*/
+WHERE ST.last_name ='Qee' AND GR.course_id = 808;
 
 -- compute student grade
 
@@ -376,6 +386,112 @@ SELECT
 FROM 
 	Student AS ST,
     Courses AS C
-ORDER BY ST.student_id
+ORDER BY ST.student_id;
+
+DELIMITER //
+CREATE FUNCTION calc_category_score_with_drop(student_id INT, course_id INT, category_id INT)
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE total_pts_earned DECIMAL(10,2);
+    DECLARE total_pts_avail DECIMAL(10,2);
+    DECLARE category_score DECIMAL(10,2);
+
+    -- Compute total points earned for category, excluding the lowest score
+    SELECT 
+        SUM(GR.student_score) - MIN(GR.student_score) 
+    INTO 
+        total_pts_earned
+    FROM
+        Grade AS GR
+    JOIN 
+        Assignment AS A ON GR.assignment_id = A.assignment_id
+    JOIN 
+        Student AS ST ON GR.student_id = ST.student_id
+    WHERE
+        GR.student_id = student_id AND GR.course_id = course_id AND A.category_id = category_id;
+    
+    -- Compute total points available for category
+    SELECT
+        SUM(A.max_score) INTO total_pts_avail
+    FROM 
+        Assignment AS A
+    JOIN 
+        Grade AS GR ON GR.assignment_id = A.assignment_id
+    JOIN 
+        Student AS ST ON GR.student_id = ST.student_id
+    WHERE
+        GR.student_id = student_id
+        AND A.course_id = course_id
+        AND A.category_id = category_id;
+        
+    -- Compute category score
+    IF total_pts_avail IS NOT NULL AND total_pts_avail > 0 THEN
+        SET category_score = total_pts_earned / total_pts_avail;
+    ELSE
+        SET category_score = 0;
+    END IF;
+    
+    -- Apply category weight to category score
+    IF category_id = 1 THEN
+        SET category_score = category_score * (
+            SELECT 
+                weight_percent 
+            FROM 
+                Category AS C
+            WHERE 
+                C.category_id = 1);
+	ELSEIF category_id = 2 THEN
+        SET category_score = category_score * (
+            SELECT 
+                weight_percent 
+            FROM 
+                Category AS C
+            WHERE 
+                C.category_id = 2);
+                
+	ELSEIF category_id = 3 THEN
+        SET category_score = category_score * (
+            SELECT 
+                weight_percent 
+            FROM 
+                Category AS C
+            WHERE 
+                C.category_id = 3);
+                
+	ELSEIF category_id = 4 THEN
+        SET category_score = category_score * (
+            SELECT 
+                weight_percent 
+            FROM 
+                Category AS C
+            WHERE 
+                C.category_id = 4);
+    END IF;
+    RETURN category_score; 
+END //
+DELIMITER ;
+
+SELECT 
+	ST.student_id,
+	ST.first_name,
+	ST.last_name,
+    C.course_id,
+	calc_category_score_with_drop(ST.student_id, C.course_id, 1) AS part_score, 
+	calc_category_score_with_drop(ST.student_id, C.course_id, 2) AS homework_score,
+	calc_category_score_with_drop(ST.student_id, C.course_id, 3) AS test_score,
+	calc_category_score_with_drop(ST.student_id, C.course_id, 4) AS project_score,
+	((calc_category_score_with_drop(ST.student_id, C.course_id, 1) + 
+	calc_category_score_with_drop(ST.student_id, C.course_id, 2) + 
+	calc_category_score_with_drop(ST.student_id, C.course_id, 3) + 
+	calc_category_score_with_drop(ST.student_id, C.course_id, 4)) * 100) AS final_grade
+FROM 
+	Student AS ST
+JOIN
+    Courses AS C
+ORDER BY 
+	ST.student_id
+
 
         
