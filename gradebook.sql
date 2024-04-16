@@ -25,7 +25,7 @@ CREATE TABLE Courses (
 CREATE TABLE Category (
      category_id INT PRIMARY KEY,
      category_name VARCHAR(100),
-     wieght_percent INT
+     weight_percent INT
 ); 
 CREATE TABLE Student (
       student_id INT PRIMARY KEY,
@@ -180,3 +180,23 @@ JOIN
     Assignment A ON G.assignment_id = A.assignment_id
 WHERE 
     C.course_id = 808;
+    
+#Change the percentages of the categories for a course
+UPDATE Category
+SET weight_percent = 15
+WHERE category_id= 1 ;
+
+UPDATE Category
+SET weight_percent = 25
+WHERE category_id = 2;
+
+UPDATE Category
+SET weight_percent = 40
+WHERE category_id= 3;
+
+UPDATE Category
+SET weight_percent = 20
+WHERE category_id = 4;
+
+SELECT * 
+FROM Category
