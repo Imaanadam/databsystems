@@ -55,6 +55,7 @@ FOREIGN KEY (course_id) REFERENCES Courses (course_id)
 );
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 INSERT INTO Grade (grade_id, date)
 VALUES 
 (101,'2024-04-27');
@@ -65,6 +66,10 @@ VALUES
 =======
 INSERT INTO Grade(grade_id, student_id, assignment_id, course_id, student_score, date)
 VALUES 
+=======
+INSERT INTO Grade(grade_id, student_id, assignment_id, course_id, student_score, date)
+VALUES 
+>>>>>>> refs/remotes/origin/main
 (101,'2024-04-15'),
 (171,'2024-04-15'),
 (151,'2024-04-15'),
@@ -113,7 +118,10 @@ VALUES
 
 
 
+<<<<<<< HEAD
 >>>>>>> c92a7a842559b94b947a3af2a8e311be56369da9
+=======
+>>>>>>> refs/remotes/origin/main
 
 #CREATE VIEW Grade_view AS
 #SELECT grade_id, student_id, course_id, student_score
