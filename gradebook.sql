@@ -54,12 +54,13 @@ FOREIGN KEY (assignment_id) REFERENCES Assignment (assignment_id),
 FOREIGN KEY (course_id) REFERENCES Courses (course_id)
 );
 
-INSERT INTO Grade
+INSERT INTO Grade (grade_id, date)
 VALUES 
-(101, 3038031, 112, 354, 95, '2024-04-27'),
-(102, 3038032, 112, 354, 86, '2024-04-27'),
-(103, 3038033, 112, 354, 91, '2024-04-27'),
-(104, 3038034, 112, 354, 70, '2024-04-27');
+(101,'2024-04-27');
+
+#(102, 3038032, 112, 354, 86, '2024-04-27'),
+#(103, 3038033, 112, 354, 91, '2024-04-27'),
+#(104, 3038034, 112, 354, 70, '2024-04-27');
 
 #CREATE VIEW Grade_view AS
 #SELECT grade_id, student_id, course_id, student_score
