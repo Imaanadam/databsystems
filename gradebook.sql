@@ -69,7 +69,7 @@ VALUES
 INSERT INTO Student
 VALUES
 (259871,'steve', 'jobs'),
-(259872,'ivy', 'smith'),
+(259872,'ivy', 'Qee'),
 (259873,'sam', 'smith'),
 (259874,'victoria', 'paris');
 
@@ -199,4 +199,59 @@ SET weight_percent = 20
 WHERE category_id = 4;
 
 SELECT * 
-FROM Category
+FROM Category;
+
+/*UPDATE Grade
+SET student_score = student_score + 2
+WHERE student_id = 259871 AND assignment_id = 101;
+
+UPDATE Grade
+SET student_score = student_score + 2
+WHERE student_id = 259872 AND assignment_id = 102;
+
+UPDATE Grade
+SET student_score = student_score + 2
+WHERE student_id = 259873 AND assignment_id = 103;
+
+UPDATE Grade
+SET student_score = student_score + 2
+WHERE student_id = 259874 AND assignment_id = 104;
+*/
+#Add 2 points to the score of each student on an assignment
+
+UPDATE Grade
+SET student_score = student_score + 2
+WHERE grade_id = 101;
+
+UPDATE Grade
+SET student_score = student_score + 2
+WHERE grade_id = 110;
+
+UPDATE Grade
+SET student_score = student_score + 2
+WHERE grade_id = 151;
+
+UPDATE Grade
+SET student_score = student_score + 2
+WHERE grade_id = 171;
+
+SELECT *
+FROM Grade;
+
+/*UPDATE Grade as GR
+JOIN Student as ST ON GR.student_id = ST.student_id
+SET GR.student_score = GR.student_score + 2
+WHERE ST.last_name LIKE '%Q%';
+
+SELECT first_name, last_name, student_score
+FROM Grade as GR JOIN Student as ST ON GR.student; */
+
+UPDATE Grade AS GR
+JOIN (
+    SELECT student_id
+    FROM Student
+    WHERE last_name LIKE 'Q%'
+) AS ST ON GR.student_id = ST.student_id
+SET GR.student_score = GR.student_score + 2;
+
+#compute student grade
