@@ -11,6 +11,8 @@ You are asked to implement a grade book to keep track student grades for several
 The submission is based on the following ERD:　
 <img width="403" alt="Screenshot 2024-04-16 at 10 57 38 PM" src="https://github.com/Imaanadam/databsystems/assets/111910162/2ab88f8b-82a0-439a-8535-6084d5099ed8">
 
+Test Cases:https://docs.google.com/document/d/1xfbqdlPZ7OyOB1fohToz0EfCuGBdGHzmG5so1JvyYg0/edit?usp=sharing
+
 How to start:
 To run the file you must have SQL and the mySQLworkspace. 
 Copy the gradebook.sql and hit run to start
