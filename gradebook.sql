@@ -411,6 +411,8 @@ BEGIN
         Assignment AS A ON GR.assignment_id = A.assignment_id
 	JOIN
 		Student AS ST ON ST.student_id = GR.Grade_id
+	JOIN 
+		Courses AS C ON c.course_id = GR.course_id
     WHERE 
         GR.student_id = student_id AND
         A.course_id = course_id;
@@ -431,36 +433,31 @@ BEGIN
             A.course_id = course_id AND
             GR.student_score = lowest_score
         LIMIT 1  -- Limit the deletion to one assignment
-    );
     
-    -- Calculate the final grade after dropping the lowest score
-    SET final_grade = (
-        SELECT 
-            SUM(calc_category_score(student_id, course_id, 1) * weight_percent) +
-            SUM(calc_category_score(student_id, course_id, 2) * weight_percent) +
-            SUM(calc_category_score(student_id, course_id, 3) * weight_percent) +
-            SUM(calc_category_score(student_id, course_id, 4) * weight_percent)
-        FROM 
-            Category
     );
-
-    RETURN final_grade;
 
 END //
 DELIMITER ;
 
-
+CALL calc_category_score_with_drop(Student.student_id, Courses.course_id);
 SELECT 
-    ST.student_id,
-    ST.first_name,
-    ST.last_name,
+	ST.student_id,
+	ST.first_name,
+	ST.last_name,
     C.course_id,
-    calc_category_score_with_drop(ST.student_id, C.course_id) AS final_grade
+	calc_category_score(ST.student_id, C.course_id, 1) AS part_score, 
+	calc_category_score(ST.student_id, C.course_id, 2) AS homework_score,
+	calc_category_score(ST.student_id, C.course_id, 3) AS test_score,
+	calc_category_score(ST.student_id, C.course_id, 4) AS project_score,
+	((calc_category_score(ST.student_id, C.course_id, 1) + 
+	calc_category_score(ST.student_id, C.course_id, 2) + 
+	calc_category_score(ST.student_id, C.course_id, 3) + 
+	calc_category_score(ST.student_id, C.course_id, 4)) * 100) AS final_grade
 FROM 
-    Student AS ST,
-    Courses AS C 
-ORDER BY 
-    ST.student_id;
+	Student AS ST,
+    Courses AS C
+ORDER BY ST.student_id;
+
 
 
 
