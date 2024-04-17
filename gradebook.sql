@@ -89,9 +89,9 @@ INSERT INTO Assignment(assignment_id, category_id, course_id, assignment_name, m
 VALUES
 
 -- assignments in course_id = 808:
-    (105, 1, 808, 'Exit ticket 1', 20),
-    (112, 1, 808, 'Exit ticket 2', 20),
-    (113, 1, 808, 'Exit ticket 3', 20),
+    (105, 1, 808, 'Exit ticket 1', 100),
+    (112, 1, 808, 'Exit ticket 2', 100),
+    (113, 1, 808, 'Exit ticket 3', 100),
     (101, 2, 808, 'Homework 1', 100),
 	(106, 2, 808, 'Homework 1', 100),
 	(110, 2, 808, 'Homework 2', 100),
@@ -129,8 +129,8 @@ VALUES
 		(210, 259872, 108, 808, 89, '2024-04-15'),
 		(211, 259872, 109, 808, 79, '2024-04-15'),
 		(212, 259872, 114, 808, 100, '2024-04-15'),
-        (215, 259872, 112, 808, 18, '2024-04-15'),
-		(216, 259872, 113, 808, 20, '2024-04-15'),
+        (215, 259872, 112, 808, 45, '2024-04-15'),
+		(216, 259872, 113, 808, 32, '2024-04-15'),
         
 -- Assignments of student 3 (sam smith):
 	-- Astronomy
@@ -141,7 +141,7 @@ VALUES
 		(204, 259874, 104, 304, 65, '2024-04-15'),
 	-- Linear Algebra
 		(205, 259874, 106, 808, 40, '2024-04-15'),
-		(206, 259874, 105, 808, 19, '2024-04-15');
+		(206, 259874, 105, 808, 67, '2024-04-15');
 
 
 -- show the tables with the inserted contents;
@@ -259,28 +259,31 @@ FROM Category;
 -- Add 2 points to the score of each student on an assignment
 UPDATE Grade
 SET student_score = student_score + 2
-WHERE grade_id = 101;
+WHERE grade_id = 201;
 
 UPDATE Grade
 SET student_score = student_score + 2
-WHERE grade_id = 110;
+WHERE grade_id = 207;
 
 UPDATE Grade
 SET student_score = student_score + 2
-WHERE grade_id = 151;
+WHERE grade_id = 203;
 
 UPDATE Grade
 SET student_score = student_score + 2
-WHERE grade_id = 171;
+WHERE grade_id = 205;
 
 SELECT *
 FROM Grade;
 
+-- Add 2 points to student with last name containing "Q"
 UPDATE Grade as GR
 JOIN Student as ST ON GR.student_id = ST.student_id JOIN Courses AS C ON C.course_id = GR.course_id
 SET GR.student_score = GR.student_score + 2
 WHERE ST.last_name ='Qee' AND GR.course_id = 808;
 
+SELECT *
+FROM Grade;
 -- compute student grade
 
 DELIMITER //
@@ -389,109 +392,76 @@ FROM
 ORDER BY ST.student_id;
 
 DELIMITER //
-CREATE FUNCTION calc_category_score_with_drop(student_id INT, course_id INT, category_id INT)
+CREATE FUNCTION calc_category_score_with_drop(student_id INT, course_id INT)
 RETURNS DECIMAL(10,2)
 DETERMINISTIC
 READS SQL DATA
 BEGIN
-    DECLARE total_pts_earned DECIMAL(10,2);
-    DECLARE total_pts_avail DECIMAL(10,2);
-    DECLARE category_score DECIMAL(10,2);
-
-    -- Compute total points earned for category, excluding the lowest score
+    DECLARE lowest_score INT;
+    DECLARE final_grade DECIMAL(10,2);
+    
+    -- Find the lowest score for the student in the course
     SELECT 
-        SUM(GR.student_score) - MIN(GR.student_score) 
+        MIN(GR.student_score) 
     INTO 
-        total_pts_earned
-    FROM
+        lowest_score
+    FROM 
         Grade AS GR
     JOIN 
         Assignment AS A ON GR.assignment_id = A.assignment_id
-    JOIN 
-        Student AS ST ON GR.student_id = ST.student_id
-    WHERE
-        GR.student_id = student_id AND GR.course_id = course_id AND A.category_id = category_id;
+	JOIN
+		Student AS ST ON ST.student_id = GR.Grade_id
+    WHERE 
+        GR.student_id = student_id AND
+        A.course_id = course_id;
     
-    -- Compute total points available for category
-    SELECT
-        SUM(A.max_score) INTO total_pts_avail
-    FROM 
-        Assignment AS A
-    JOIN 
-        Grade AS GR ON GR.assignment_id = A.assignment_id
-    JOIN 
-        Student AS ST ON GR.student_id = ST.student_id
-    WHERE
-        GR.student_id = student_id
-        AND A.course_id = course_id
-        AND A.category_id = category_id;
-        
-    -- Compute category score
-    IF total_pts_avail IS NOT NULL AND total_pts_avail > 0 THEN
-        SET category_score = total_pts_earned / total_pts_avail;
-    ELSE
-        SET category_score = 0;
-    END IF;
+    -- Delete one assignment with the lowest score for the student in the course
+    DELETE FROM Assignment
+    WHERE assignment_id IN (
+        SELECT 
+            A.assignment_id
+        FROM 
+            Assignment AS A
+        JOIN 
+            Grade AS GR ON A.assignment_id = GR.assignment_id
+		JOIN
+			Student AS ST ON ST.student_id = GR.student_id
+        WHERE 
+            GR.student_id = student_id AND
+            A.course_id = course_id AND
+            GR.student_score = lowest_score
+        LIMIT 1  -- Limit the deletion to one assignment
+    );
     
-    -- Apply category weight to category score
-    IF category_id = 1 THEN
-        SET category_score = category_score * (
-            SELECT 
-                weight_percent 
-            FROM 
-                Category AS C
-            WHERE 
-                C.category_id = 1);
-	ELSEIF category_id = 2 THEN
-        SET category_score = category_score * (
-            SELECT 
-                weight_percent 
-            FROM 
-                Category AS C
-            WHERE 
-                C.category_id = 2);
-                
-	ELSEIF category_id = 3 THEN
-        SET category_score = category_score * (
-            SELECT 
-                weight_percent 
-            FROM 
-                Category AS C
-            WHERE 
-                C.category_id = 3);
-                
-	ELSEIF category_id = 4 THEN
-        SET category_score = category_score * (
-            SELECT 
-                weight_percent 
-            FROM 
-                Category AS C
-            WHERE 
-                C.category_id = 4);
-    END IF;
-    RETURN category_score; 
+    -- Calculate the final grade after dropping the lowest score
+    SET final_grade = (
+        SELECT 
+            SUM(calc_category_score(student_id, course_id, 1) * weight_percent) +
+            SUM(calc_category_score(student_id, course_id, 2) * weight_percent) +
+            SUM(calc_category_score(student_id, course_id, 3) * weight_percent) +
+            SUM(calc_category_score(student_id, course_id, 4) * weight_percent)
+        FROM 
+            Category
+    );
+
+    RETURN final_grade;
+
 END //
 DELIMITER ;
 
+
 SELECT 
-	ST.student_id,
-	ST.first_name,
-	ST.last_name,
+    ST.student_id,
+    ST.first_name,
+    ST.last_name,
     C.course_id,
-	calc_category_score_with_drop(ST.student_id, C.course_id, 1) AS part_score, 
-	calc_category_score_with_drop(ST.student_id, C.course_id, 2) AS homework_score,
-	calc_category_score_with_drop(ST.student_id, C.course_id, 3) AS test_score,
-	calc_category_score_with_drop(ST.student_id, C.course_id, 4) AS project_score,
-	((calc_category_score_with_drop(ST.student_id, C.course_id, 1) + 
-	calc_category_score_with_drop(ST.student_id, C.course_id, 2) + 
-	calc_category_score_with_drop(ST.student_id, C.course_id, 3) + 
-	calc_category_score_with_drop(ST.student_id, C.course_id, 4)) * 100) AS final_grade
+    calc_category_score_with_drop(ST.student_id, C.course_id) AS final_grade
 FROM 
-	Student AS ST
-JOIN
-    Courses AS C
+    Student AS ST,
+    Courses AS C 
 ORDER BY 
-	ST.student_id
+    ST.student_id;
+
 
 
         
